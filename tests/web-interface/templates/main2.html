@@ -23,16 +23,20 @@
 </div>
 
 <div class="container">
-  <div class="row">
-    <div class="col-sm-4 text-center">
-      <button type="button" class="btn btn-lg btn-block btn-success">
-         Add Photomask
-      </button>
+  <div class="row"> 	
+    <div class="col-sm-4 text-center">   
+      <label class="btn btn-lg btn-block btn-success">
+      	<form method=post enctype=multipart/form-data>
+         Add Photomask <input type=file name =file hidden>
+         </form>
+      </label>     
     </div>
-    <div class="col-sm-4 text-center">
-      <button type="button" class="btn btn-lg btn-block btn-success">
-         Launch
-      </button>
+    <div class="col-sm-4 text-center">    
+      <label class="btn btn-lg btn-block btn-success">
+      	<form method=post enctype=multipart/form-data>
+         Launch <input type=submit value=Upload hidden>
+         </form>
+      </label>  
     </div>
     <div class="col-sm-4 text-center">
       <button type="button-lg" class="btn btn-lg btn-block btn-primary" data-toggle="modal" data-target="#settings">
@@ -54,7 +58,20 @@
 
           <!-- Modal body -->
           <div class="modal-body">
-             Settings stuff here...
+
+          	<div class="form-group">
+  				<label for="time">Exposure Time (s):</label>
+  				<input type="text" class="form-control" id="time" placeholder="{{templateData.exposureTime}}">
+  			</div>
+  			<div class="form-group">
+  				<label for="iter">Number of iterations:</label>
+  				<input type="text" class="form-control" id="iter" placeholder="{{templateData.iterations}}">
+			</div>
+			<div class="form-group">
+  				<label for="diam">Substrate Diameter (mm):</label>
+  				<input type="text" class="form-control" id="diam" placeholder="{{templateData.substrateDiameter}}">
+			</div>
+
           </div>
 
           <!-- Modal footer -->
