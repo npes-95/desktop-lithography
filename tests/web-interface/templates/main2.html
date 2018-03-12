@@ -12,10 +12,18 @@
     button.btn {
     margin-bottom: 10px;
     }
+
+    .alert{
+    position: fixed;
+    bottom: 5px;
+    width: 91%;
+}
+
     
  </style>
 </head>
 <body>
+
 
 <div class="jumbotron text-center">
   <h1>Desktop Lithography Web Interface</h1>
@@ -23,24 +31,22 @@
 </div>
 
 <div class="container">
+
+
   <div class="row"> 	
     <div class="col-sm-4 text-center">   
-      <label class="btn btn-lg btn-block btn-success">
-      	<form method=post enctype=multipart/form-data>
-         Add Photomask <input type=file name =file hidden>
-         </form>
-      </label>     
+       <button type="button-lg" class="btn btn-lg btn-block btn-success" data-toggle="modal" data-target="#upload">
+        	Add Photomask
+      </button> 
     </div>
     <div class="col-sm-4 text-center">    
       <label class="btn btn-lg btn-block btn-success">
-      	<form method=post enctype=multipart/form-data>
-         Launch <input type=submit value=Upload hidden>
-         </form>
+      	Launch
       </label>  
     </div>
     <div class="col-sm-4 text-center">
       <button type="button-lg" class="btn btn-lg btn-block btn-primary" data-toggle="modal" data-target="#settings">
-            Settings
+        	Settings
       </button>
     </div>
   </div>
@@ -83,6 +89,57 @@
           </div>
        </div>
     </div>
+
+
+
+     <div class="modal fade" id="upload">
+     <div class="modal-dialog">
+        <div class="modal-content">
+
+        <!-- Modal Header -->
+        <div class="modal-header">
+           <h4 class="text-muted">Add Photomask</h4>
+              <button type="button" class="close" data-dismiss="modal">&times;</button>
+           </div>
+
+          <!-- Modal body -->
+          <div class="modal-body">
+
+          <p>Please upload a photomask in bitmap or vector format (.bmp, .ai, .eps, .pdf or .svg).</p>
+
+          </div>
+
+          <!-- Modal footer -->
+          <div class="modal-footer">
+          <form method="POST" enctype=multipart/form-data>    	
+             <input type=file name ="file">
+             <input type=submit value=Upload>
+          </form>
+          </div>
+
+          </div>
+       </div>
+    </div>
+
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    <!-- Categories: success (green), info (blue), warning (yellow), danger (red) -->
+    {% if messages %}
+      {% for category, message in messages %}
+        <div class="alert alert-{{ category }} alert-dismissible" role="alert">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <!-- <strong>Title</strong> --> {{ message }}
+        </div>
+      {% endfor %}
+     {% endif %}
+    {% endwith %}
+
+
+
+
+
+
+
   
   
   
@@ -91,4 +148,7 @@
 
 
 </body>
+
+
+
 </html>
