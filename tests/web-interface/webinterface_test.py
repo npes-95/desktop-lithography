@@ -9,6 +9,9 @@ ALLOWED_EXTENSIONS = set(['bmp', 'ai', 'eps', 'pdf', 'svg'])
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
+# defaults
+templateData = {'exposureTime' : '10','iterations': '50','substrateDiameter': '100'}
+
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -17,37 +20,53 @@ def allowed_file(filename):
 
 @app.route("/", methods=['GET', 'POST'])
 def main():
+    
 
-    # get relevant info from user
-    templateData = {'exposureTime' : '10','iterations': '50','substrateDiameter': '100'}
+    if request.method == "POST":
 
-    if request.method == 'POST':
+        fileUploaded = 'file' in request.files
 
-        # check if the post request has the file part
-        if 'file' not in request.files:
-            flash('No file selected.', 'danger')
+        # check if user is uploading a file
+        if not fileUploaded:
+
+            # make sure the user has actually changed the settings
+            settingsChanged = request.form.get('exp_time', None)
+
+            if not settingsChanged:
+                flash('No file selected.', 'danger')
+                return redirect(request.url)
+
+            templateData['exposureTime'] = request.form['exp_time']
+            templateData['iterations'] = request.form['iterations']
+            templateData['substrateDiameter'] = request.form['substrate_diam']
+
+            flash('Settings saved.', 'success')
+
+            
             return redirect(request.url)
+
+        else: 
         
-        file = request.files['file']
+            file = request.files['file']
 
-        print(file.filename)
+            print(file.filename)
 
-        if file.filename == '':
-            flash('No file selected.', 'danger')
-            return redirect(request.url)
+            if file.filename == '':
+                flash('No file selected.', 'danger')
+                return redirect(request.url)
 
-        if file and allowed_file(file.filename):
+            if file and allowed_file(file.filename):
 
-            #this is where we want to pass the file to the DMD/processing functions
+                #this is where we want to pass the file to the DMD/processing functions
 
-            filename = secure_filename(file.filename)
-            file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-            flash('New photomask ({}) added!'.format(filename), 'success')
-            return redirect(request.url)
+                filename = secure_filename(file.filename)
+                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+                flash('New photomask ({}) added!'.format(filename), 'success')
+                return redirect(request.url)
 
-        else:
-            flash('Incompatible file format. Please try again.', 'danger')
-            return redirect(request.url)
+            else:
+                flash('Incompatible file format. Please try again.', 'danger')
+                return redirect(request.url)
 
     return render_template('main2.html', templateData = templateData)
 
