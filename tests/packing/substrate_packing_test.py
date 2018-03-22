@@ -39,17 +39,22 @@ c.draw(win)
 
 grid = getGridPoints()
 
+num_rect = 0
+
 
 
 for x,y in grid:
 
-	#if sqrt((x+500 - 500)**2 + (y+350 - 350)**2) <= CIRCLE_RADIUS - PHOTOMASK_DIAM:
-	if sqrt(x**2 + y**2) <= CIRCLE_RADIUS - PHOTOMASK_DIAM:
+	#if sqrt((x+500 - 500)**2 + (y+350 - 350)**2) <= CIRCLE_RADIUS - PHOTOMASK_DIAM//2:
+	if sqrt(x**2 + y**2) <= CIRCLE_RADIUS - PHOTOMASK_DIAM//2:
+		num_rect += 1
 		p1 = Point(x+500 - PHOTOMASK_WIDTH//2,y+350 - PHOTOMASK_LEN//2)
 		p2 = Point(x+500 + PHOTOMASK_WIDTH//2,y+350 + PHOTOMASK_LEN//2)
 
 		rect = Rectangle(p1,p2)
 		rect.draw(win)
+
+print(num_rect)
 
 
 win.getMouse() # Pause to view result
