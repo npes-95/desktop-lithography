@@ -10,44 +10,40 @@ pad = Image.new('RGB',
 
 # import photomask
 
-photomask = Image.open("photomask_large.bmp")
+photomask = Image.open("photomasks_out.bmp")
 
 # compare size to DMD size
 print(photomask.size)
 
 p_width, p_height = photomask.size
 
-if p_width < DMD_WIDTH and p_height < DMD_HEIGHT:
+# check how many times photomask fits into dmd area
+photomask_height_multiplier = (p_height//DMD_HEIGHT)+1
+photomask_width_multiplier = (p_width//DMD_WIDTH)+1
+
+# pad out with black so the final image will match the size of the DMD (or a multiple of)
+# copy photomask in (top left corner)
+pad = pad.resize((photomask_width_multiplier*DMD_WIDTH,photomask_height_multiplier*DMD_HEIGHT))
+pad.paste(photomask)
+
+print(pad.size)
+
+pad.save("photomask_large_final.bmp")
+
+# split photomask 
+split_photmask = list()
+
+for w in range(photomask_width_multiplier):
+	for h in range(photomask_height_multiplier):
+		split_photmask.append(pad.crop((w*DMD_WIDTH,h*DMD_HEIGHT,(w+1)*DMD_WIDTH,(h+1)*DMD_HEIGHT)))
+
+i = 0
+
+for subsection in split_photmask:
+	subsection.save("photmask_subsection_" + str(i) +".bmp")
+	i += 1
 
 
-	# pad out with black so the final image will match the size of the DMD
-	# copy photomask in (top left corner)
-	pad.paste(photomask)
-	pad.save("photomask_small_final.bmp")
-
-
-elif p_width > DMD_WIDTH or p_height > DMD_HEIGHT:
-
-	# pad out with black to a rectangle four times the size of the DMD
-	# this will be split, and the edges of the design will match up
-	pad = pad.resize((2*DMD_WIDTH,2*DMD_HEIGHT))
-
-	print(pad.size)
-
-	# copy photomask in (top left corner)
-	pad.paste(photomask)
-
-	# split this photomask into 4 (left to right, top to bottom)
-	photomask_quad1 = pad.crop((0,0,DMD_WIDTH,DMD_HEIGHT))
-	photomask_quad2 = pad.crop((DMD_WIDTH,0,2*DMD_WIDTH,DMD_HEIGHT))
-	photomask_quad3 = pad.crop((0,DMD_HEIGHT,DMD_WIDTH,2*DMD_HEIGHT))
-	photomask_quad4 = pad.crop((DMD_WIDTH,DMD_HEIGHT,2*DMD_WIDTH,2*DMD_HEIGHT))  
-
-	pad.save("photomask_large_final.bmp")
-	photomask_quad1.save("photomask_quad1_final.bmp")
-	photomask_quad2.save("photomask_quad2_final.bmp")
-	photomask_quad3.save("photomask_quad3_final.bmp")
-	photomask_quad4.save("photomask_quad4_final.bmp")
 
 
 	
