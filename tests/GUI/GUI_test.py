@@ -1,4 +1,6 @@
 import sys
+import picamera
+import time
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QPushButton, QHBoxLayout, QTabWidget, QVBoxLayout, QLineEdit, QFormLayout, QComboBox, QGroupBox, QFileDialog, QGridLayout, QLabel
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSlot, Qt
@@ -219,6 +221,7 @@ class TableWidget(QWidget):
 
         # open stream button
         self.openStreamButton = QPushButton("Open Camera Stream")
+        self.openStreamButton.clicked.connect(self.openCameraStream)
 
         # calibrate button
         self.calibrateButton = QPushButton("Calibrate")  
@@ -262,8 +265,8 @@ class TableWidget(QWidget):
         if file:
             self.photomaskTB.setText(file)
 
-    #@pyqtSlot()
-    #def openCameraStream(self):
+    @pyqtSlot()
+    def openCameraStream(self):
 
 
         # open picamera stream
@@ -271,13 +274,18 @@ class TableWidget(QWidget):
         # just open a dialog with some buttons
         # we can cheat and centre the window over the GUI, but it won't track its movements
 
-        #with picamera.PiCamera() as camera:
+        with picamera.PiCamera() as camera:
 
-                #camera.resolution = (1024, 768)
-                #camera.start_preview()
+                camera.resolution = (1024, 768)
+                
+                camera.start_preview()
+                camera.preview.fullscreen = False
+                camera.preview.window  = (900,200,512,384)
+                
+                
 
                 # Camera warm-up time
-                #time.sleep(2)
+                time.sleep(20)
 
 
 
