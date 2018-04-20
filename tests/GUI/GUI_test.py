@@ -1,6 +1,6 @@
 import sys
-import picamera
 import time
+from CameraPreview import PiCameraPreview
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QPushButton, QHBoxLayout, QTabWidget, QVBoxLayout, QLineEdit, QFormLayout, QComboBox, QGroupBox, QFileDialog, QGridLayout, QLabel
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSlot, Qt
@@ -10,8 +10,8 @@ class App(QMainWindow):
     def __init__(self):
         super().__init__()
         self.title = "Desktop Lithography Control Software - 1.0"
-        self.left = 10
-        self.top = 10
+        self.left = 30
+        self.top = 30
         self.width = 640
         self.height = 480
         self.initUI()
@@ -35,6 +35,9 @@ class TableWidget(QWidget):
     def __init__(self, parent):   
         super(QWidget, self).__init__(parent)
         self.layout = QVBoxLayout(self)
+        
+        # init camera preview 
+        self.cameraPreview = PiCameraPreview()
  
         # Initialize tab screen
         self.tabs = QTabWidget()
@@ -83,10 +86,6 @@ class TableWidget(QWidget):
         self.launchLayout.addWidget(self.testButton)
 
         return self.launchLayout
-
-
-
-        # add picamera stream in first tab?
 
     def createSettingsTabLayout(self):
 
@@ -264,28 +263,14 @@ class TableWidget(QWidget):
         file, _ = QFileDialog.getOpenFileName(self,"Please Select A Photmask", "","BMP Files (*.bmp)", options=options)
         if file:
             self.photomaskTB.setText(file)
+            # dos some other stuff here
 
     @pyqtSlot()
     def openCameraStream(self):
-
-
-        # open picamera stream
-        # note: picamera preview is very crude, you can't actually embed it in a window
-        # just open a dialog with some buttons
-        # we can cheat and centre the window over the GUI, but it won't track its movements
-
-        with picamera.PiCamera() as camera:
-
-                camera.resolution = (1024, 768)
-                
-                camera.start_preview()
-                camera.preview.fullscreen = False
-                camera.preview.window  = (900,200,512,384)
-                
-                
-
-                # Camera warm-up time
-                time.sleep(20)
+        
+        self.cameraPreview.start()
+        
+        
 
 
 
