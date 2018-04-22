@@ -24,44 +24,46 @@ class LightCrafter():
 		self.dmdSocket.send(b'\x04\x01\x00\x00\x01\x00\x00\x06') 
 		return self.dmdSocket.recv(256)
 		
-	def setImage(self, bitmap):
+	def setImage(self, file):
+
+		with open(file, "rb") as bitmap:
 		
-		# convert bmp image to byte array
-		bmp = bytearray(bitmap)
+			# convert bmp image to byte array
+			bmp = bytearray(bitmap.read())
 		
-		# init start of command	
-		baseCmd = bytearray(b'\x02\x01\x05')
-		flag = bytearray(b'\x01')
+			# init start of command	
+			baseCmd = bytearray(b'\x02\x01\x05')
+			flag = bytearray(b'\x01')
 		
 		
-		# split up image as max command payload is 64K bytes	
-		step = 65535
-		for i in range(0,len(bmp), step):
+			# split up image as max command payload is 64K bytes	
+			step = 65535
+			for i in range(0,len(bmp), step):
 			
-			# split payload
-			payload = bmp[i:i+step]
+				# split payload
+				payload = bmp[i:i+step]
 			
-			# check if flag needs to be changed (1: beginning of data, 2: middle of data, 3: end of data)
-			if i > 0:
-				flag = bytearray(b'\x02')
+				# check if flag needs to be changed (1: beginning of data, 2: middle of data, 3: end of data)
+				if i > 0:
+					flag = bytearray(b'\x02')
 				
-			if len(payload) < step:
-				flag = bytearray(b'\x03')
+				if len(payload) < step:
+					flag = bytearray(b'\x03')
 			
-			# get payload length	
-			payloadLen = bytearray(len(payload).to_bytes(2, byteorder='little'))
+				# get payload length	
+				payloadLen = bytearray(len(payload).to_bytes(2, byteorder='little'))
 			
-			# put all the different parts of the command together	
-			setImageCmd = baseCmd + flag + payloadLen + payload
+				# put all the different parts of the command together	
+				setImageCmd = baseCmd + flag + payloadLen + payload
 			
-			# calculate checksum	
-			checksum = bytearray([sum(setImageCmd)%256])
+				# calculate checksum	
+				checksum = bytearray([sum(setImageCmd)%256])
 			
-			# add checksum to command
-			setImageCmd += checksum
+				# add checksum to command
+				setImageCmd += checksum
 			
-			# send command
-			self.dmdSocket.send(bytes(setImageCmd))
+				# send command
+				self.dmdSocket.send(bytes(setImageCmd))
 			
 			
 				
