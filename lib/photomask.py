@@ -1,4 +1,5 @@
 # HELPER CLASS FOR PHOTOMASK
+# need to add proper filepaths once implemented in main
 
 import cairosvg
 from PIL import Image
@@ -20,21 +21,25 @@ class Photomask():
 
 		if file.lower().endswith('.svg'):
 
-			cairosvg.svg2png(url=file, write_to="../temp/photmask_temp.png")
-			im = Image.open("../temp/photmask_temp.png")
-			im.save("../temp/raw_photmask.bmp")
+			#cairosvg.svg2png(url=file, write_to="../temp/photmask_temp.png")
+			#im = Image.open("../temp/photmask_temp.png")
+			#im.save("../temp/raw_photmask.bmp")
+			cairosvg.svg2png(url=file, write_to="photmask_temp.png")
+			im = Image.open("photmask_temp.png")
+			im.save("raw_photmask.bmp")
 			im.close()
 
 		else:
 
 			im = Image.open(file)
-			im.save("../temp/raw_photmask.bmp")
+			#im.save("../temp/raw_photmask.bmp")
+			im.save("raw_photmask.bmp")
 			im.close()
 
 	def split(self):
 
 		# empty list
-		self.photmaskFiles[:] = []
+		self.photomaskFiles[:] = []
 
 		# use new image for padding
 		pad = Image.new('RGB',
@@ -42,7 +47,8 @@ class Photomask():
                  (0, 0, 0))  # black
 
 		# import converted photomask
-		rawPhotomask = Image.open("../temp/raw_photmask.bmp")
+		#rawPhotomask = Image.open("../temp/raw_photmask.bmp")
+		rawPhotomask = Image.open("raw_photmask.bmp")
 
 		# get its size
 		rp_width, rp_height = rawPhotomask.size
@@ -66,8 +72,9 @@ class Photomask():
 		i = 0
 
 		for subsection in split_photomask:
-			filepath = "temp/photomask_final" + str(i) +".bmp"
-			photomaskFiles.append(filepath)
+			#filepath = "temp/photomask_final" + str(i) +".bmp"
+			filepath = "photomask_final" + str(i) +".bmp"
+			self.photomaskFiles.append(filepath)
 			subsection.save("../" + filepath)
 			i += 1
 
