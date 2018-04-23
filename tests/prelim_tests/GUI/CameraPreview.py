@@ -13,7 +13,6 @@ class videoThread(QThread):
 
     def __init__(self):
         super().__init__()
-        #self.finished.connect(self.deleteLater)
         
     def __del__(self):
         self.wait()
@@ -23,45 +22,67 @@ class videoThread(QThread):
         
         frame = io.BytesIO()
         self.running = True
+        self.paused = True
         
-        with picamera.PiCamera() as camera:
+        # init camera here (we want it to be closed when the preview exits, so other processes can use it)
+        camera = picamera.PiCamera()
+               
+        # increase camera framerate and reduce resolution to reduce capture speed
+        camera.resolution = (640,480)
+        camera.framerate = 80
             
-            # increase camera framerate and reduce resolution to reduce capture speed
-            camera.resolution = (640,480)
-            camera.framerate = 80
-            
-            time.sleep(2)
+        time.sleep(2)
             
         
-            while(self.running):
-                
-                # capture image
-                camera.capture(frame, 'jpeg')
-                
-                # convert stream to PIL and Qt image
-                frame.seek(0)
-                pframe = Image.open(frame)
-                qframe = ImageQt.ImageQt(pframe)
-                
-                self.newFrame.emit(qframe)
-                
-                # reset stream
-                frame.seek(0)
-                frame.truncate()
-                
-                #time.sleep(0.04)
+        while(self.running):
             
-            print("Preview thread exiting.")
-    
-    @pyqtSlot()            
+            if(self.paused):
+                
+                camera.close()
+                
+                while(self.paused):
+                    time.sleep(0.1)
+                
+                camera = picamera.PiCamera()
+                camera.resolution = (640,480)
+                camera.framerate = 80
+                time.sleep(0.1)
+                
+                
+            # capture image
+            camera.capture(frame, 'jpeg')
+              
+            # convert stream to PIL and Qt image
+            frame.seek(0)
+            pframe = Image.open(frame)
+            qframe = ImageQt.ImageQt(pframe)
+                
+            self.newFrame.emit(qframe)
+                
+            # reset stream
+            frame.seek(0)
+            frame.truncate()
+                
+            time.sleep(0.04)
+            
+        camera.close()
+
+            
+        print("Preview thread exiting.")
+              
     def stop(self):
         self.running = False
+        
+        
+    def play(self):
+        self.paused = False
+        
+    def pause(self):
+        self.paused = True
                 
       
 
-class PiCameraPreview(QMainWindow):
-    
-    windowClosed = pyqtSignal()
+class PiCameraPreview(QWidget):
 
     def __init__(self):
         super().__init__()
@@ -76,41 +97,32 @@ class PiCameraPreview(QMainWindow):
         self.setGeometry(650, 30, 640, 480)
         self.label.adjustSize()
         
-        #self.show()
-        
-        #self.video.start()
-        
-
-        
-        
-        
-        
-    def start(self): 
         
         #video stream
         self.video = videoThread()
         
         # connect new frame signal to frame update slot
-        self.video.newFrame.connect(self.setFrame)
-        
-        # connect window closed signal to strop thread slot
-        self.windowClosed.connect(self.video.stop)  
-           
-        self.isOpen = True
-        self.show()
+        self.video.newFrame.connect(self.setFrame) 
+            
         self.video.start()
         
+        
+    def __del__(self):
+        self.video.stop()
+        if self.video.isRunning():
+            self.video.wait()
+        
+        
+    def start(self): 
+        self.video.play()           
+        self.isOpen = True
+        self.show()
+        
+        
     def closeEvent(self, event):
+        self.video.pause()        
         self.isOpen = False
-        self.windowClosed.emit()
-        
-
-        
-        
-        
-        
-
-        
+  
     
     @pyqtSlot(QImage)
     def setFrame(self,frame):
