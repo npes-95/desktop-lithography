@@ -16,8 +16,7 @@ class LightCrafter():
 		self.dmdSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 		self.dmdSocket.connect((self.TCP_IP, self.TCP_PORT))
 		
-		# set board mode to static image/test pattern
-		self.dmdSocket.send(b'\x02\x01\x01\x00\x01\x00\x00\x05')
+
 		
 	def getVersion(self):
 		
@@ -25,6 +24,9 @@ class LightCrafter():
 		return self.dmdSocket.recv(256)
 		
 	def setImage(self, file):
+		
+		# set board mode to static image display
+		self.dmdSocket.send(b'\x02\x01\x01\x00\x01\x00\x00\x05')
 
 		with open(file, "rb") as bitmap:
 		
@@ -64,8 +66,14 @@ class LightCrafter():
 			
 				# send command
 				self.dmdSocket.send(bytes(setImageCmd))
-			
-			
+				
+	def setTestPattern(self):
+		
+		# set board mode to test pattern display
+		self.dmdSocket.send(b'\x02\x01\x01\x01\x01\x00\x00\x06')
+		
+		# set test pattern to checkerboard	
+		self.dmdSocket.send(b'\x02\x01\x03\x00\x01\x00\x00\x06')
 				
 
 		

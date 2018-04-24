@@ -23,9 +23,34 @@ class MotorDriver():
         print ("Serial configuration established: " + str(self.ser.isOpen()))
        
         self.textWrapper = io.TextIOWrapper(io.BufferedRWPair(self.ser, self.ser))
+        
+        self.x = 0
+        self.y = 0
+        self.z = 0
        
     def __del__(self):
         self.ser.close()
+        
+    def setX(self, x):
+		self.x = x
+		
+    def setY(self, y):
+		self.y = y
+		
+	def setZ(self, z):
+		self.z = z
+		
+	def moveToCoordinates(self):
+		
+		gcode = "G1 f400 X" + str(self.x)
+		self.writeGCodeLine(gcode)
+		
+		gcode = "G1 f400 Y" + str(self.y)
+		self.writeGCodeLine(gcode)
+		
+		gcode = "G1 f400 Z" + str(self.z)
+		self.writeGCodeLine(gcode)
+		
         
     def writeGCodeLine(self, gcode):
         
