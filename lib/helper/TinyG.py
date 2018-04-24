@@ -40,6 +40,9 @@ class MotorDriver():
 	def setZ(self, z):
 		self.z = z
 		
+	def getCurrentCoordinates(self):
+		return (self.x,self.y,self.z)
+		
 	def moveToCoordinates(self):
 		
 		gcode = "G1 f400 X" + str(self.x)
