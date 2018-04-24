@@ -3,11 +3,11 @@
 from time import sleep
 from PyQt5.QtCore import pyqtSlot, pyqtSignal, QThread
 
-class MainExposure(QThread):
+class TestExposure(QThread):
 	
-	progess = pyqtSignal(float)
+	progess = pyqtSignal(int)
 	
-	def __init__(self, DMD, LED, stage, photomask, substrate, minExposureTime, maxExposureTime, step):
+	def __init__(self, DMD, LED, stage, substrate, minExposureTime, maxExposureTime, step):
 		super().__init__()
 		
 		self.DMD = DMD
@@ -21,9 +21,6 @@ class MainExposure(QThread):
 		self.cancelled = False
 		
 	def run(self):
-		
-		# assuming here there is only one photomask file for now
-		photomaskFiles = self.photomask.getFiles()
 		
 		self.DMD.setTestPattern()
 		
@@ -53,7 +50,7 @@ class MainExposure(QThread):
 			
 			i += 1
 			
-			self.progress.emit(i/((self.maxExposureTime - self.minExposureTime)/self.step))
+			self.progress.emit(int(100*i/((self.maxExposureTime - self.minExposureTime)/self.step)))
 			
 		def cancel(self):
 			self.cancelled = True

@@ -1,7 +1,22 @@
-import sys
 import time
+import sys
+
+sys.path.append("lib/helper")
+sys.path.append("lib/process")
+
+
+from DMD import LightCrafter
+from LEDs  import LED
+from photomask import Photomask
+from substrate import Substrate
+from TinyG import MotorDriver
 from CameraPreview import PiCameraPreview
-from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QPushButton, QHBoxLayout, QTabWidget, QVBoxLayout, QLineEdit, QFormLayout, QComboBox, QGroupBox, QFileDialog, QGridLayout, QLabel
+
+from main_exposure import MainExposure
+from test_exposure import TestExposure
+
+
+from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QPushButton, QHBoxLayout, QTabWidget, QVBoxLayout, QLineEdit, QFormLayout, QComboBox, QGroupBox, QFileDialog, QGridLayout, QLabel, QProgressBar, QTextEdit
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSlot, Qt
  
@@ -14,6 +29,7 @@ class App(QMainWindow):
         self.top = 30
         self.width = 640
         self.height = 480
+        #self.initInterfaces()
         self.initUI()
  
     def initUI(self):
@@ -28,6 +44,14 @@ class App(QMainWindow):
 
 
         self.show()
+        
+    def initInterfaces(self):
+        
+        self.dmd = LightCrafter()
+        self.LED = LED()
+        self.photomask = Photomask()
+        self.substrate = Substrate()
+        self.stage = MotorDriver()
 
 
 class TableWidget(QWidget):        
@@ -73,17 +97,37 @@ class TableWidget(QWidget):
     # GUI SETUP
 
     def createLaunchTabLayout(self):
+        
+        # text box for console
+        self.guiConsole = QTextEdit("Welcome to the Desktop Lithography Control GUI. Please check the settings and calibrate the substrate size before launching the operation. The etching parameters are taken directly from their fields when the operation is launched.")
+        self.guiConsole.setReadOnly(True)
 
         # launch button 
         self.launchButton = QPushButton("Launch")
         self.launchButton.setToolTip("Launch photolithogrphy operation.")
+        self.launchButton.clicked.connect(self.mainEtchLaunch)
 
         self.testButton = QPushButton("Test")
         self.testButton.setToolTip("Test photolithogrphy operation. Will print identical pattern at different exposure times.")
+        self.testButton.clicked.connect(self.testEtchLaunch)
+        
+        self.cancelButton = QPushButton("Cancel")
+        self.cancelButton.setEnabled(False)
+        self.cancelButton.clicked.connect(self.cancelProcess)
+        
+        self.launchButtonLayout = QHBoxLayout()
+        self.launchButtonLayout.addWidget(self.launchButton)
+        self.launchButtonLayout.addWidget(self.testButton)
+        self.launchButtonLayout.addWidget(self.cancelButton)
+        
+        self.progressBar = QProgressBar()
+        self.progressBar.setRange(0,100)
+        
 
         self.launchLayout = QVBoxLayout(self)
-        self.launchLayout.addWidget(self.launchButton)
-        self.launchLayout.addWidget(self.testButton)
+        self.launchLayout.addWidget(self.guiConsole)
+        self.launchLayout.addLayout(self.launchButtonLayout)
+        self.launchLayout.addWidget(self.progressBar)
 
         return self.launchLayout
 
@@ -227,10 +271,12 @@ class TableWidget(QWidget):
         self.openStreamButton.clicked.connect(self.openCameraStream)
 
         # calibrate button
-        self.calibrateButton = QPushButton("Calibrate")  
-        self.calibrateButton.setToolTip("Set zero point for XY stage.") 
+        #self.calibrateButton = QPushButton("Calibrate")  
+        #self.calibrateButton.setToolTip("Set zero point for XY stage.") 
 
         # show XYZ position using text boxes
+        #x,y,z = self.stage.getCurrentCoordinates()
+        
         self.xTB = QLineEdit()
         self.yTB = QLineEdit()
         self.zTB = QLineEdit()
@@ -239,6 +285,20 @@ class TableWidget(QWidget):
         self.xyzLayout.addWidget(self.xTB)
         self.xyzLayout.addWidget(self.yTB)
         self.xyzLayout.addWidget(self.zTB)
+        
+        # buttons to set bottom left and top right corners of substrate
+        self.setBottomLeftButton = QPushButton("Set Bottom Left")
+        self.setBottomLeftButton.setToolTip("Set the coordinates for the bottom left corner of a rectangular substrate. For circular substrates, select two diametrically opposed points.")
+        self.setBottomLeftButton.clicked.connect(self.setBottomLeft)
+        
+        self.setTopRightButton = QPushButton("Set Top Right")
+        self.setTopRightButton.setToolTip("Set the coordinates for the top right corner of a rectangular substrate. For circular substrates, select two diametrically opposed points.")
+        self.setTopRightButton.clicked.connect(self.setTopRight)
+        
+        self.calibrationLayout = QHBoxLayout()
+        self.calibrationLayout.addWidget(self.setBottomLeftButton)
+        self.calibrationLayout.addWidget(self.setTopRightButton)
+        
 
 
         
@@ -248,7 +308,8 @@ class TableWidget(QWidget):
         self.previewLayout.addWidget(self.openStreamButton)
         self.previewLayout.addLayout(self.arrowGrid)
         self.previewLayout.addLayout(self.xyzLayout)
-        self.previewLayout.addWidget(self.calibrateButton)
+        self.previewLayout.addLayout(self.calibrationLayout)
+        #self.previewLayout.addWidget(self.calibrateButton)
 
 
         return self.previewLayout
@@ -274,8 +335,89 @@ class TableWidget(QWidget):
         
         self.cameraPreview.start()
         
+    @pyqtSlot()
+    def mainEtchLaunch(self):
         
-
+        # disable launch and test buttons, enable cancel button
+        self.launchButton.setEnabled(False)
+        self.testButton.setEnabled(False)
+        self.cancelButton.setEnabled(True)
+        
+        # pass settings to substrate and photomask
+        self.substrate.setShape(str(self.substrateShapeCB.currentText()))
+        self.substrate.setBottomLeft()
+        self.substrate.setTopRight()
+        
+        self.photomask.importFile(str(self.photomaskTB.text()))
+        self.photomask.split()
+        
+        exposureTime = float(self.exposureTimeTB.text())
+        iterations = int(self.interationsTB.text())
+        
+        # pass all the settings to the process thread
+        self.mainEtchProcess = MainExposure(self.dmd, self.LED, self.stage, self.photomask, self.substrate, exposureTime, iterations)
+        
+        # connect to progress bar
+        self.mainEtchProcess.progress.connect(self.progressBar.setValue)
+        self.mainEtchProcess.finished.connect(self.progressBar.reset)
+        self.mainEtchProcess.finished.connect(self.resetButtons)
+        
+        self.mainEtchProcess.start()
+        
+        
+    @pyqtSlot()
+    def testEtchLaunch(self):
+        
+        # disable launch and test buttons, enable cancel button
+        self.launchButton.setEnabled(False)
+        self.testButton.setEnabled(False)
+        self.cancelButton.setEnabled(True)
+        
+        # pass settings to substrate and photomask
+        self.substrate.setShape(str(self.substrateShapeCB.currentText()))
+        
+        self.substrate.setTopRight()
+        
+        minExposureTime = float(self.minExposureTimeTB.text())
+        maxExposureTime = float(self.maxExposureTimeTB.text())
+        step = float(self.testStepTB.text())
+        
+        # pass all the settings to the process thread
+        self.testEtchProcess = TestExposure(self.dmd, self.LED, self.stage, self.substrate, minExposureTime, maxExposureTime, step)
+        
+        # connect to progress bar
+        self.testEtchProcess.progress.connect(self.progressBar.setValue)
+        self.testEtchProcess.finished.connect(self.progessBar.reset)
+        self.testEtchProcess.finished.connect(self.resetButtons)
+        
+        self.testEtchProcess.start()
+    
+    @pyqtSlot()  
+    def cancelProcess(self):
+        if self.mainEtchProcess.isRunning():
+            self.mainEtchProcess.cancel()
+        else:
+            self.testEtchProcess.cancel()
+        
+    @pyqtSlot()
+    def resetButtons(self):
+        # enable launch and test buttons, disable cancel button
+        self.launchButton.setEnabled(True)
+        self.testButton.setEnabled(True)
+        self.cancelButton.setEnabled(False)
+    
+    
+    @pyqtSlot() 
+    def setBottomLeft(self):
+        # get current coordinates and set the bottom left of the stage
+        x,y,z = self.stage.getCurrentCoordinates()
+        self.substrate.setBottomLeft(x,y)
+        
+    @pyqtSlot() 
+    def setTopRight(self):
+        # get current coordinates and set the bottom left of the stage
+        x,y,z = self.stage.getCurrentCoordinates()
+        self.substrate.setTopRight(x,y)       
 
 
         

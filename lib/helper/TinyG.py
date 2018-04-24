@@ -32,28 +32,28 @@ class MotorDriver():
         self.ser.close()
         
     def setX(self, x):
-		self.x = x
-		
+        self.x = x
+        
     def setY(self, y):
-		self.y = y
-		
-	def setZ(self, z):
-		self.z = z
-		
-	def getCurrentCoordinates(self):
-		return (self.x,self.y,self.z)
-		
-	def moveToCoordinates(self):
-		
-		gcode = "G1 f400 X" + str(self.x)
-		self.writeGCodeLine(gcode)
-		
-		gcode = "G1 f400 Y" + str(self.y)
-		self.writeGCodeLine(gcode)
-		
-		gcode = "G1 f400 Z" + str(self.z)
-		self.writeGCodeLine(gcode)
-		
+        self.y = y
+        
+    def setZ(self, z):
+        self.z = z
+        
+    def getCurrentCoordinates(self):
+        return (self.x,self.y,self.z)
+        
+    def moveToCoordinates(self):
+        
+        gcode = "G1 f400 X" + str(self.x)
+        self.writeGCodeLine(gcode)
+        
+        gcode = "G1 f400 Y" + str(self.y)
+        self.writeGCodeLine(gcode)
+        
+        gcode = "G1 f400 Z" + str(self.z)
+        self.writeGCodeLine(gcode)
+        
         
     def writeGCodeLine(self, gcode):
         

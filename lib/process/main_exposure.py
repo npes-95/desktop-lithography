@@ -5,7 +5,7 @@ from PyQt5.QtCore import pyqtSlot, pyqtSignal, QThread
 
 class MainExposure(QThread):
 	
-	progess = pyqtSignal(float)
+	progess = pyqtSignal(int)
 	
 	def __init__(self, DMD, LED, stage, photomask, substrate, exposureTime, iterations):
 		super().__init__()
@@ -52,7 +52,7 @@ class MainExposure(QThread):
 			
 			patternsExposed += 1
 			
-			self.progress.emit(patternsExposed/self.iterations)
+			self.progress.emit(int(100*patternsExposed/self.iterations))
 			
 		def cancel(self):
 			self.cancelled = True

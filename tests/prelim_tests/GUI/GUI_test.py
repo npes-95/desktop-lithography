@@ -1,6 +1,18 @@
-import sys
 import time
+import sys
+
+sys,path.append("lib/helper")
+sys,path.append("lib/process")
+
+
+from DMD import LightCrafter
+from LEDs  import LED
+from photomask import Photomask
+from substrate import Substrate
+from TinyG import MotorDriver
 from CameraPreview import PiCameraPreview
+
+
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QPushButton, QHBoxLayout, QTabWidget, QVBoxLayout, QLineEdit, QFormLayout, QComboBox, QGroupBox, QFileDialog, QGridLayout, QLabel
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSlot, Qt
@@ -14,6 +26,7 @@ class App(QMainWindow):
         self.top = 30
         self.width = 640
         self.height = 480
+        self.initInterfaces()
         self.initUI()
  
     def initUI(self):
@@ -28,6 +41,14 @@ class App(QMainWindow):
 
 
         self.show()
+        
+    def initInterfaces(self):
+		
+		self.dmd = LightCrafter()
+		self.LED = LED()
+		self.photomask = Photomask()
+		self.substrate = Substrate()
+		self.stage = MotorDriver()
 
 
 class TableWidget(QWidget):        
@@ -207,7 +228,7 @@ class TableWidget(QWidget):
         self.arrowGrid = QGridLayout()
         #self.arrowGrid.addWidget(self.xLabel,0,3)
         #self.arrowGrid.addWidget(self.yLabel,4,7)
-        self.arrowGrid.addWidget(self.centreButton,4,4)
+        self.arrowGrid.addWidget(self.centreButton,4,3)
         self.arrowGrid.addWidget(self.upSmButton,3,3)
         self.arrowGrid.addWidget(self.upMdButton,2,3)
         self.arrowGrid.addWidget(self.upLgButton,1,3)
