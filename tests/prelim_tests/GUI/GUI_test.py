@@ -193,7 +193,10 @@ class TableWidget(QWidget):
         # right buttons
         self.rightSmButton = QPushButton("+0.1")
         self.rightMdButton = QPushButton("+1")
-        self.rightLgButton = QPushButton("+10")  
+        self.rightLgButton = QPushButton("+10") 
+        
+        # centre button
+        self.centreButton = QPushButton("0") 
 
         #self.xLabel = QLabel("X")
         #self.xLabel.setAlignment(Qt.AlignCenter)
@@ -204,6 +207,7 @@ class TableWidget(QWidget):
         self.arrowGrid = QGridLayout()
         #self.arrowGrid.addWidget(self.xLabel,0,3)
         #self.arrowGrid.addWidget(self.yLabel,4,7)
+        self.arrowGrid.addWidget(self.centreButton,4,4)
         self.arrowGrid.addWidget(self.upSmButton,3,3)
         self.arrowGrid.addWidget(self.upMdButton,2,3)
         self.arrowGrid.addWidget(self.upLgButton,1,3)
