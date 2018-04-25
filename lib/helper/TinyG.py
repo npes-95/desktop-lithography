@@ -3,10 +3,15 @@
 import time;
 import serial;
 import io;
+from PyQt5.QtCore import pyqtSignal, QObject
 
-class MotorDriver():
+class MotorDriver(QObject):
+    
+    coordinatesChanged = pyqtSignal(float,float,float)
 
     def __init__(self):
+        
+        super().__init__()
         
         # init serial port
         self.ser = serial.Serial(
@@ -48,14 +53,14 @@ class MotorDriver():
         self.z = z 
         
     def incrementX(self, increment):
-		self.x += increment
-		
+        self.x += increment
+        
     def incrementY(self, increment):
-		self.y += increment    
-		
+        self.y += increment    
+        
     def incrementZ(self, increment):
-		self.z += increment		
-		    
+        self.z += increment     
+            
     def setCoordinates(self, coordinates):
         self.x, self.y, self.z = coordinates
         
@@ -66,6 +71,7 @@ class MotorDriver():
         
         gcode = "G0 X" + str(self.x) + " Y" + str(self.y) + " Z" + str(self.z)
         self.writeGCodeLine(gcode)
+        self.coordinatesChanged.emit(self.x,self.y,self.z)
         
         
     def writeGCodeLine(self, gcode):

@@ -18,7 +18,7 @@ from test_exposure import TestExposure
 
 from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QPushButton, QHBoxLayout, QTabWidget, QVBoxLayout, QLineEdit, QFormLayout, QComboBox, QGroupBox, QFileDialog, QGridLayout, QLabel, QProgressBar, QTextEdit
 from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import pyqtSlot, Qt
+from PyQt5.QtCore import pyqtSlot, Qt, QObject
  
 class App(QMainWindow):
  
@@ -29,7 +29,6 @@ class App(QMainWindow):
         self.top = 30
         self.width = 640
         self.height = 480
-        #self.initInterfaces()
         self.initUI()
  
     def initUI(self):
@@ -45,13 +44,7 @@ class App(QMainWindow):
 
         self.show()
         
-    def initInterfaces(self):
-        
-        self.dmd = LightCrafter()
-        self.LED = LED()
-        self.photomask = Photomask()
-        self.substrate = Substrate()
-        self.stage = MotorDriver()
+
 
 
 class TableWidget(QWidget):        
@@ -61,7 +54,11 @@ class TableWidget(QWidget):
         self.layout = QVBoxLayout(self)
         
         # init camera preview 
-        self.cameraPreview = PiCameraPreview()
+        #self.cameraPreview = PiCameraPreview()
+        
+        # init interfaces
+        self.initInterfaces()
+        
  
         # Initialize tab screen
         self.tabs = QTabWidget()
@@ -92,6 +89,17 @@ class TableWidget(QWidget):
         # Add tabs to widget        
         self.layout.addWidget(self.tabs)
         self.setLayout(self.layout)
+        
+        
+    def initInterfaces(self):
+        
+        #self.dmd = LightCrafter()
+        #self.LED = LED()
+        self.photomask = Photomask()
+        self.substrate = Substrate()
+        self.stage = MotorDriver()
+        
+        self.stage.coordinatesChanged.connect(self.updateDisplayCoordinates)
 
 
     # GUI SETUP
@@ -223,6 +231,8 @@ class TableWidget(QWidget):
         self.upSmButton = QPushButton("+0.1")
         self.upMdButton = QPushButton("+1")
         self.upLgButton = QPushButton("+10")
+        
+        self.upSmButton.clicked.connect(self.incrementX)
 
         # down buttons
         self.downSmButton = QPushButton("-0.1")
@@ -239,18 +249,43 @@ class TableWidget(QWidget):
         self.rightMdButton = QPushButton("+1")
         self.rightLgButton = QPushButton("+10") 
         
+        
         # centre button
         self.centreButton = QPushButton("0") 
+        
+        # z-axis buttons
+        self.zUpSmButton = QPushButton("0.1")
+        self.zUpMdButton = QPushButton("1")
+        self.zUpLgButton = QPushButton("10")
+        self.zDownSmButton = QPushButton("-0.1")
+        self.zDownMdButton = QPushButton("-1")
+        self.zDownLgButton = QPushButton("-10")        
+        
+        # connect buttons to slots
+        self.upSmButton.clicked.connect(self.incrementX)
+        self.upMdButton.clicked.connect(self.incrementX)
+        self.upLgButton.clicked.connect(self.incrementX)
+        self.downSmButton.clicked.connect(self.incrementX)
+        self.downMdButton.clicked.connect(self.incrementX)
+        self.downLgButton.clicked.connect(self.incrementX)
+        self.leftSmButton.clicked.connect(self.incrementY)
+        self.leftMdButton.clicked.connect(self.incrementY)
+        self.leftLgButton.clicked.connect(self.incrementY)
+        self.rightSmButton.clicked.connect(self.incrementY)
+        self.rightMdButton.clicked.connect(self.incrementY)
+        self.rightLgButton.clicked.connect(self.incrementY)
+        self.zUpSmButton.clicked.connect(self.incrementZ)
+        self.zUpMdButton.clicked.connect(self.incrementZ)
+        self.zUpLgButton.clicked.connect(self.incrementZ)
+        self.zDownSmButton.clicked.connect(self.incrementZ)
+        self.zDownMdButton.clicked.connect(self.incrementZ)
+        self.zDownLgButton.clicked.connect(self.incrementZ)
+        
+        self.centreButton.clicked.connect(self.recentreXY)
 
-        #self.xLabel = QLabel("X")
-        #self.xLabel.setAlignment(Qt.AlignCenter)
-        #self.yLabel = QLabel("Y")
-        #self.yLabel.setAlignment(Qt.AlignCenter)
 
         # add buttons to grid
         self.arrowGrid = QGridLayout()
-        #self.arrowGrid.addWidget(self.xLabel,0,3)
-        #self.arrowGrid.addWidget(self.yLabel,4,7)
         self.arrowGrid.addWidget(self.centreButton,4,3)
         self.arrowGrid.addWidget(self.upSmButton,3,3)
         self.arrowGrid.addWidget(self.upMdButton,2,3)
@@ -264,22 +299,23 @@ class TableWidget(QWidget):
         self.arrowGrid.addWidget(self.rightSmButton,4,4)
         self.arrowGrid.addWidget(self.rightMdButton,4,5)
         self.arrowGrid.addWidget(self.rightLgButton,4,6)
+        self.arrowGrid.addWidget(self.zUpSmButton,3,7)
+        self.arrowGrid.addWidget(self.zUpMdButton,2,7)
+        self.arrowGrid.addWidget(self.zUpLgButton,1,7)
+        self.arrowGrid.addWidget(self.zDownSmButton,5,7)
+        self.arrowGrid.addWidget(self.zDownMdButton,6,7)
+        self.arrowGrid.addWidget(self.zDownLgButton,7,7)
 
 
         # open stream button
         self.openStreamButton = QPushButton("Open Camera Stream")
         self.openStreamButton.clicked.connect(self.openCameraStream)
 
-        # calibrate button
-        #self.calibrateButton = QPushButton("Calibrate")  
-        #self.calibrateButton.setToolTip("Set zero point for XY stage.") 
-
         # show XYZ position using text boxes
-        #x,y,z = self.stage.getCurrentCoordinates()
         
-        self.xTB = QLineEdit()
-        self.yTB = QLineEdit()
-        self.zTB = QLineEdit()
+        self.xTB = QLineEdit("0.0")
+        self.yTB = QLineEdit("0.0")
+        self.zTB = QLineEdit("0.0")
 
         self.xyzLayout = QHBoxLayout()
         self.xyzLayout.addWidget(self.xTB)
@@ -309,7 +345,6 @@ class TableWidget(QWidget):
         self.previewLayout.addLayout(self.arrowGrid)
         self.previewLayout.addLayout(self.xyzLayout)
         self.previewLayout.addLayout(self.calibrationLayout)
-        #self.previewLayout.addWidget(self.calibrateButton)
 
 
         return self.previewLayout
@@ -417,7 +452,38 @@ class TableWidget(QWidget):
     def setTopRight(self):
         # get current coordinates and set the bottom left of the stage
         x,y,z = self.stage.getCurrentCoordinates()
-        self.substrate.setTopRight(x,y)       
+        self.substrate.setTopRight(x,y)
+        
+    @pyqtSlot()
+    def incrementX(self):
+        button = QObject.sender(self)       
+        self.stage.incrementX(float(str(button.text())))    
+        self.stage.moveToCoordinates() 
+        
+    @pyqtSlot()
+    def incrementY(self):
+        button = QObject.sender(self)       
+        self.stage.incrementY(float(str(button.text())))    
+        self.stage.moveToCoordinates() 
+        
+    @pyqtSlot()
+    def incrementZ(self):
+        button = QObject.sender(self)       
+        self.stage.incrementZ(float(str(button.text())))    
+        self.stage.moveToCoordinates()
+        
+    @pyqtSlot()
+    def recentreXY(self):
+        self.stage.setX(0)
+        self.stage.setY(0)
+        self.stage.moveToCoordinates()
+    
+    @pyqtSlot(float,float,float)    
+    def updateDisplayCoordinates(self, x, y, z):
+        self.xTB.setText(str(x))
+        self.yTB.setText(str(y))
+        self.zTB.setText(str(z))
+        
 
 
         
