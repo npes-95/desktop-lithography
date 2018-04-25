@@ -9,7 +9,7 @@ class Substrate():
         self.shape = "Circle"
 
         self.photomaskWidth = 6.5718
-        self.photomaskHeight = 3.699
+        self.photomaskHeight = 3.699 
         self.photomaskDiameter = sqrt(self.photomaskWidth**2 + self.photomaskHeight**2)
         
         self.bottomLeft = (-10,-10)

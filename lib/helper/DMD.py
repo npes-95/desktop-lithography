@@ -1,6 +1,7 @@
 # HELPER CLASS FOR DMD 
 
 import socket
+from time import sleep
 
 class LightCrafter():
     
@@ -27,6 +28,8 @@ class LightCrafter():
         
         # set board mode to static image display
         self.dmdSocket.send(b'\x02\x01\x01\x00\x01\x00\x00\x05')
+        
+        sleep(0.2)
 
         with open(file, "rb") as bitmap:
         
@@ -66,11 +69,16 @@ class LightCrafter():
             
                 # send command
                 self.dmdSocket.send(bytes(setImageCmd))
+
                 
     def setTestPattern(self):
         
         # set board mode to test pattern display
         self.dmdSocket.send(b'\x02\x01\x01\x00\x01\x00\x01\x06')
+        
+        
+        sleep(0.2)
+        
         
         # set test pattern to checkerboard  
         self.dmdSocket.send(b'\x02\x01\x03\x00\x01\x00\x00\x07')
