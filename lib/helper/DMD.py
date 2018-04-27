@@ -17,6 +17,8 @@ class LightCrafter():
         self.dmdSocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.dmdSocket.connect((self.TCP_IP, self.TCP_PORT))
         
+        print("DMD connected!")
+        
 
         
     def getVersion(self):

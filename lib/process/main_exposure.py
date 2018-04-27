@@ -43,12 +43,14 @@ class MainExposure(QThread):
 			self.stage.moveToCoordinates()
 			
 			# expose substrate
-			self.LED.setUVLED(1)
+			#self.LED.setUVLED(1)
+			self.LED.setRedLED(1)
 			
 			# sleep for exposure time
 			sleep(self.exposureTime)
 			
-			self.LED.setUVLED(0)
+			#self.LED.setUVLED(0)
+			self.LED.setRedLED(0)
 			
 			patternsExposed += 1
 			

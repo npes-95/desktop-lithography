@@ -54,7 +54,7 @@ class TableWidget(QWidget):
         self.layout = QVBoxLayout(self)
         
         # init camera preview 
-        #self.cameraPreview = PiCameraPreview()
+        self.cameraPreview = PiCameraPreview()
         
         # init interfaces
         self.initInterfaces()
@@ -93,8 +93,8 @@ class TableWidget(QWidget):
         
     def initInterfaces(self):
         
-        #self.dmd = LightCrafter()
-        #self.LED = LED()
+        self.dmd = LightCrafter()
+        self.LED = LED()
         self.photomask = Photomask()
         self.substrate = Substrate()
         self.stage = MotorDriver()
@@ -154,7 +154,6 @@ class TableWidget(QWidget):
         # settings text entries
         self.exposureTimeTB = QLineEdit("2")
         self.interationsTB = QLineEdit("50")
-        self.substrateDiameterTB = QLineEdit("100")
         
 
         # substrate type combo box
@@ -177,7 +176,6 @@ class TableWidget(QWidget):
         # add elements to form layout
         self.mainFormLayout.addRow("Exposure time (s):", self.exposureTimeTB)
         self.mainFormLayout.addRow("Pattern iterations:", self.interationsTB)
-        self.mainFormLayout.addRow("Substrate diameter:", self.substrateDiameterTB)
         self.mainFormLayout.addRow("Substrate shape:", self.substrateShapeCB)
         self.mainFormLayout.addRow("Photomask:", self.fileBrowserLayout)
 
@@ -310,6 +308,11 @@ class TableWidget(QWidget):
         # open stream button
         self.openStreamButton = QPushButton("Open Camera Stream")
         self.openStreamButton.clicked.connect(self.openCameraStream)
+        
+        # toggle crosshair
+        self.toggleXHairButton = QPushButton("Toggle Crosshair")
+        self.toggleXHairButton.clicked.connect(self.toggleXHair)
+        self.crosshairOn = False
 
         # show XYZ position using text boxes
         
@@ -342,6 +345,7 @@ class TableWidget(QWidget):
 
         self.previewLayout = QVBoxLayout()
         self.previewLayout.addWidget(self.openStreamButton)
+        self.previewLayout.addWidget(self.toggleXHairButton)
         self.previewLayout.addLayout(self.arrowGrid)
         self.previewLayout.addLayout(self.xyzLayout)
         self.previewLayout.addLayout(self.calibrationLayout)
@@ -373,17 +377,16 @@ class TableWidget(QWidget):
     @pyqtSlot()
     def mainEtchLaunch(self):
         
+        
         # disable launch and test buttons, enable cancel button
         self.launchButton.setEnabled(False)
         self.testButton.setEnabled(False)
         self.cancelButton.setEnabled(True)
         
         # pass settings to substrate and photomask
-        self.substrate.setShape(str(self.substrateShapeCB.currentText()))
-        self.substrate.setBottomLeft()
-        self.substrate.setTopRight()
+        self.substrate.setShape(self.substrateShapeCB.currentText())
         
-        self.photomask.importFile(str(self.photomaskTB.text()))
+        self.photomask.importFile(self.photomaskTB.text())
         self.photomask.split()
         
         exposureTime = float(self.exposureTimeTB.text())
@@ -409,9 +412,7 @@ class TableWidget(QWidget):
         self.cancelButton.setEnabled(True)
         
         # pass settings to substrate and photomask
-        self.substrate.setShape(str(self.substrateShapeCB.currentText()))
-        
-        self.substrate.setTopRight()
+        self.substrate.setShape(self.substrateShapeCB.currentText())
         
         minExposureTime = float(self.minExposureTimeTB.text())
         maxExposureTime = float(self.maxExposureTimeTB.text())
@@ -459,30 +460,45 @@ class TableWidget(QWidget):
         button = QObject.sender(self)       
         self.stage.incrementX(float(str(button.text())))    
         self.stage.moveToCoordinates() 
+        time.sleep(0.5)
         
     @pyqtSlot()
     def incrementY(self):
         button = QObject.sender(self)       
         self.stage.incrementY(float(str(button.text())))    
-        self.stage.moveToCoordinates() 
+        self.stage.moveToCoordinates()
+        time.sleep(0.5) 
         
     @pyqtSlot()
     def incrementZ(self):
         button = QObject.sender(self)       
         self.stage.incrementZ(float(str(button.text())))    
         self.stage.moveToCoordinates()
+        time.sleep(0.5)
         
     @pyqtSlot()
     def recentreXY(self):
         self.stage.setX(0)
         self.stage.setY(0)
         self.stage.moveToCoordinates()
+        time.sleep(0.5)
     
     @pyqtSlot(float,float,float)    
     def updateDisplayCoordinates(self, x, y, z):
-        self.xTB.setText(str(x))
-        self.yTB.setText(str(y))
-        self.zTB.setText(str(z))
+        self.xTB.setText("%.1f" % x)
+        self.yTB.setText("%.1f" % y)
+        self.zTB.setText("%.1f" % z)
+        
+    @pyqtSlot()
+    def toggleXHair(self):
+        if self.crosshairOn:
+            self.LED.setRedLED(0)
+            self.crosshairOn = False
+        else:
+            self.dmd.setImage("temp/crosshair2.bmp")
+            self.LED.setRedLED(1)
+            self.crosshairOn = True
+            
         
 
 

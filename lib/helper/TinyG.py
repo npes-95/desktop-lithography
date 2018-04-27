@@ -39,6 +39,8 @@ class MotorDriver(QObject):
         self.textWrapper.write(initGCode)
         self.textWrapper.flush()
         
+        print("Motor driver connected!")
+        
         
     def __del__(self):
         self.ser.close()
