@@ -2,6 +2,7 @@
 # need to add proper filepaths once implemented in main
 
 import cairosvg
+import math
 from PIL import Image
 
 class Photomask():
@@ -13,6 +14,8 @@ class Photomask():
 
         # list in case the photomask has to be split into multiple files
         self.photomaskFiles = list()
+        
+        self.tempFilePath = "/home/pi/Documents/desktop-lithography/temp/"
 
 
     def importFile(self, file):
@@ -21,19 +24,15 @@ class Photomask():
 
         if file.lower().endswith('.svg'):
 
-            #cairosvg.svg2png(url=file, write_to="../temp/photmask_temp.png")
-            #im = Image.open("../temp/photmask_temp.png")
-            #im.save("../temp/raw_photmask.bmp")
-            cairosvg.svg2png(url=file, write_to="photmask_temp.png")
-            im = Image.open("photmask_temp.png")
-            im.save("raw_photmask.bmp")
+            cairosvg.svg2png(url=file, write_to=(self.tempFilepath + "photmask_temp.png"))
+            im = Image.open(self.tempFilePath+"photmask_temp.png")
+            im.save(self.tempFilePath+"raw_photmask.bmp")
             im.close()
 
         else:
 
             im = Image.open(file)
-            #im.save("../temp/raw_photmask.bmp")
-            im.save("raw_photmask.bmp")
+            im.save(self.tempFilePath+"raw_photmask.bmp")
             im.close()
 
     def split(self):
@@ -47,15 +46,15 @@ class Photomask():
                  (0, 0, 0))  # black
 
         # import converted photomask
-        #rawPhotomask = Image.open("../temp/raw_photmask.bmp")
-        rawPhotomask = Image.open("raw_photmask.bmp")
+        rawPhotomask = Image.open(self.tempFilePath+"raw_photmask.bmp")
+    
 
         # get its size
         rp_width, rp_height = rawPhotomask.size
 
         # check how many times photomask fits into dmd area
-        photomask_width_multiplier = (rp_width//self.dmdPixelWidth)+1
-        photomask_height_multiplier = (rp_height//self.dmdPixelHeight)+1
+        photomask_width_multiplier = math.ceil(rp_width/self.dmdPixelWidth)
+        photomask_height_multiplier = math.ceil(rp_height/self.dmdPixelHeight)
 
         # pad out with black so the final image will match the size of the DMD (or a multiple of)
         # copy photomask in (top left corner)
@@ -72,10 +71,9 @@ class Photomask():
         i = 0
 
         for subsection in split_photomask:
-            #filepath = "temp/photomask_final" + str(i) +".bmp"
-            filepath = "photomask_final" + str(i) +".bmp"
+            filepath = self.tempFilePath + "photomask_final" + str(i) +".bmp"
             self.photomaskFiles.append(filepath)
-            subsection.save("../" + filepath)
+            subsection.save(filepath)
             i += 1
 
         rawPhotomask.close()

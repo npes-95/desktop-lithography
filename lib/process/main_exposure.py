@@ -5,7 +5,7 @@ from PyQt5.QtCore import pyqtSlot, pyqtSignal, QThread
 
 class MainExposure(QThread):
 	
-	progess = pyqtSignal(int)
+	progress = pyqtSignal(int)
 	
 	def __init__(self, DMD, LED, stage, photomask, substrate, exposureTime, iterations):
 		super().__init__()
@@ -18,15 +18,16 @@ class MainExposure(QThread):
 		self.exposureTime = exposureTime
 		self.iterations = iterations
 		
-		self.cancelled = False
+		
 		
 	def run(self):
 		
+		self.cancelled = False
 		
 		# assuming here there is only one photomask file for now
 		photomaskFiles = self.photomask.getFiles()
 		
-		self.DMD.setImage(photomaskFiles)
+		self.DMD.setImage(photomaskFiles[0])
 		
 		coordinates = self.substrate.getPackingCoordinates()
 		
@@ -42,6 +43,9 @@ class MainExposure(QThread):
 			self.stage.setY(y)
 			self.stage.moveToCoordinates()
 			
+			# sleep while camera moves to coordinates
+			sleep(2)
+			
 			# expose substrate
 			#self.LED.setUVLED(1)
 			self.LED.setRedLED(1)
@@ -56,8 +60,15 @@ class MainExposure(QThread):
 			
 			self.progress.emit(int(100*patternsExposed/self.iterations))
 			
-		def cancel(self):
-			self.cancelled = True
+			
+		# reset coordinates
+		self.stage.setX(0)
+		self.stage.setY(0)
+		self.stage.moveToCoordinates()
+		
+			
+	def cancel(self):
+		self.cancelled = True
 			
 		
 		

@@ -5,5 +5,5 @@ from DMD import LightCrafter
 
 dmd = LightCrafter()
 
-dmd.setImage("../../temp/crosshair2.bmp")
-#dmd.setTestPattern()
+#dmd.setImage("../../temp/crosshair2.bmp")
+dmd.setTestPattern()

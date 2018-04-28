@@ -16,7 +16,7 @@ from main_exposure import MainExposure
 from test_exposure import TestExposure
 
 
-from PyQt5.QtWidgets import QApplication, QWidget, QMainWindow, QPushButton, QHBoxLayout, QTabWidget, QVBoxLayout, QLineEdit, QFormLayout, QComboBox, QGroupBox, QFileDialog, QGridLayout, QLabel, QProgressBar, QTextEdit
+from PyQt5.QtWidgets import QMessageBox, QApplication, QWidget, QMainWindow, QPushButton, QHBoxLayout, QTabWidget, QVBoxLayout, QLineEdit, QFormLayout, QComboBox, QGroupBox, QFileDialog, QGridLayout, QLabel, QProgressBar, QTextEdit
 from PyQt5.QtGui import QIcon
 from PyQt5.QtCore import pyqtSlot, Qt, QObject
  
@@ -121,7 +121,6 @@ class TableWidget(QWidget):
         
         self.cancelButton = QPushButton("Cancel")
         self.cancelButton.setEnabled(False)
-        self.cancelButton.clicked.connect(self.cancelProcess)
         
         self.launchButtonLayout = QHBoxLayout()
         self.launchButtonLayout.addWidget(self.launchButton)
@@ -260,18 +259,18 @@ class TableWidget(QWidget):
         self.zDownLgButton = QPushButton("-10")        
         
         # connect buttons to slots
-        self.upSmButton.clicked.connect(self.incrementX)
-        self.upMdButton.clicked.connect(self.incrementX)
-        self.upLgButton.clicked.connect(self.incrementX)
-        self.downSmButton.clicked.connect(self.incrementX)
-        self.downMdButton.clicked.connect(self.incrementX)
-        self.downLgButton.clicked.connect(self.incrementX)
-        self.leftSmButton.clicked.connect(self.incrementY)
-        self.leftMdButton.clicked.connect(self.incrementY)
-        self.leftLgButton.clicked.connect(self.incrementY)
-        self.rightSmButton.clicked.connect(self.incrementY)
-        self.rightMdButton.clicked.connect(self.incrementY)
-        self.rightLgButton.clicked.connect(self.incrementY)
+        self.upSmButton.clicked.connect(self.incrementY)
+        self.upMdButton.clicked.connect(self.incrementY)
+        self.upLgButton.clicked.connect(self.incrementY)
+        self.downSmButton.clicked.connect(self.incrementY)
+        self.downMdButton.clicked.connect(self.incrementY)
+        self.downLgButton.clicked.connect(self.incrementY)
+        self.leftSmButton.clicked.connect(self.incrementX)
+        self.leftMdButton.clicked.connect(self.incrementX)
+        self.leftLgButton.clicked.connect(self.incrementX)
+        self.rightSmButton.clicked.connect(self.incrementX)
+        self.rightMdButton.clicked.connect(self.incrementX)
+        self.rightLgButton.clicked.connect(self.incrementX)
         self.zUpSmButton.clicked.connect(self.incrementZ)
         self.zUpMdButton.clicked.connect(self.incrementZ)
         self.zUpLgButton.clicked.connect(self.incrementZ)
@@ -376,31 +375,36 @@ class TableWidget(QWidget):
         
     @pyqtSlot()
     def mainEtchLaunch(self):
+                
+        if self.photomaskTB.text() == '':
+            QMessageBox.warning(self, "No Photomask Selected", "Please select a photomask before launching the operation!")
+            
+        else:
+            # disable launch and test buttons, enable cancel button
+            self.launchButton.setEnabled(False)
+            self.testButton.setEnabled(False)
+            self.cancelButton.setEnabled(True)
         
+            # pass settings to substrate and photomask
+            self.substrate.setShape(self.substrateShapeCB.currentText())
         
-        # disable launch and test buttons, enable cancel button
-        self.launchButton.setEnabled(False)
-        self.testButton.setEnabled(False)
-        self.cancelButton.setEnabled(True)
+            self.photomask.importFile(self.photomaskTB.text())
+            self.photomask.split()
         
-        # pass settings to substrate and photomask
-        self.substrate.setShape(self.substrateShapeCB.currentText())
+            exposureTime = float(self.exposureTimeTB.text())
+            iterations = int(self.interationsTB.text())
         
-        self.photomask.importFile(self.photomaskTB.text())
-        self.photomask.split()
+            # pass all the settings to the process thread
+            self.mainEtchProcess = MainExposure(self.dmd, self.LED, self.stage, self.photomask, self.substrate, exposureTime, iterations)
         
-        exposureTime = float(self.exposureTimeTB.text())
-        iterations = int(self.interationsTB.text())
+            # connect to progress bar
+            self.mainEtchProcess.progress.connect(self.progressBar.setValue)
+            self.mainEtchProcess.finished.connect(self.progressBar.reset)
+            self.mainEtchProcess.finished.connect(self.resetButtons)
+            
+            self.cancelButton.clicked.connect(self.mainEtchProcess.cancel)
         
-        # pass all the settings to the process thread
-        self.mainEtchProcess = MainExposure(self.dmd, self.LED, self.stage, self.photomask, self.substrate, exposureTime, iterations)
-        
-        # connect to progress bar
-        self.mainEtchProcess.progress.connect(self.progressBar.setValue)
-        self.mainEtchProcess.finished.connect(self.progressBar.reset)
-        self.mainEtchProcess.finished.connect(self.resetButtons)
-        
-        self.mainEtchProcess.start()
+            self.mainEtchProcess.start()
         
         
     @pyqtSlot()
@@ -423,17 +427,12 @@ class TableWidget(QWidget):
         
         # connect to progress bar
         self.testEtchProcess.progress.connect(self.progressBar.setValue)
-        self.testEtchProcess.finished.connect(self.progessBar.reset)
+        self.testEtchProcess.finished.connect(self.progressBar.reset)
         self.testEtchProcess.finished.connect(self.resetButtons)
         
+        self.cancelButton.clicked.connect(self.testEtchProcess.cancel)
+        
         self.testEtchProcess.start()
-    
-    @pyqtSlot()  
-    def cancelProcess(self):
-        if self.mainEtchProcess.isRunning():
-            self.mainEtchProcess.cancel()
-        else:
-            self.testEtchProcess.cancel()
         
     @pyqtSlot()
     def resetButtons(self):
