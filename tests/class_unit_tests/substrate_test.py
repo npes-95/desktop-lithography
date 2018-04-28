@@ -1,6 +1,6 @@
 
 import sys
-sys.path.append('../../lib/')
+sys.path.append('../../lib/helper')
 from substrate import Substrate
 import numpy 
 import matplotlib.pyplot as plt
@@ -8,12 +8,12 @@ import math
 
 
 # circle
-circle = plt.Circle((0,0), 50, fill = False)
+circle = plt.Circle((10,5), 50, fill = False)
 
 substrate = Substrate()
 
-substrate.setBottomLeft(0,-50)
-substrate.setTopRight(0,50)
+substrate.setBottomLeft(10,-45)
+substrate.setTopRight(10,55)
 
 
 
@@ -37,8 +37,8 @@ for x,y in coordinates:
 
 
 fig, ax = plt.subplots()
-ax.set_xlim((-50,50))
-ax.set_ylim((-50,50))
+ax.set_xlim((-70,70))
+ax.set_ylim((-70,70))
 
 ax.add_artist(circle)
 ax.scatter(x_list,y_list)
@@ -46,13 +46,13 @@ plt.show()
 
 
 # rectangle
-rectangle = plt.Rectangle((-20,-10), 40, 20, fill = False)
+rectangle = plt.Rectangle((-10,0), 40, 20, fill = False)
 
 
 
 substrate.setShape("Rectangle")
-substrate.setBottomLeft(-20,-10)
-substrate.setTopRight(20,10)
+substrate.setBottomLeft(-10,0)
+substrate.setTopRight(30,20)
 
 coordinates = substrate.getPackingCoordinates()
 
