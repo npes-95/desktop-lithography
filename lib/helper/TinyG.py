@@ -41,6 +41,10 @@ class MotorDriver(QObject):
         
         print("Motor driver connected!")
         
+        # for some reeason doesn't respond to first command sent?
+        self.moveToCoordinates()
+        self.moveToCoordinates()
+        
         
     def __del__(self):
         self.ser.close()
