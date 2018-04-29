@@ -45,7 +45,7 @@ class MainExposure(QThread):
         
         for x,y in coordinates:
             
-            if self.cancelled or patternsExposed => self.iterations:
+            if self.cancelled or patternsExposed >= self.iterations:
                 break
             
             i = 0   

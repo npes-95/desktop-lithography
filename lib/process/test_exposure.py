@@ -38,7 +38,7 @@ class TestExposure(QThread):
         
         for exposureTime in np.linspace(self.minExposureTime, self.maxExposureTime, stepNum):
             
-            if self.cancelled or i > len(coordinates):
+            if self.cancelled or i >= len(coordinates):
                 break
                 
             x,y = coordinates[i]

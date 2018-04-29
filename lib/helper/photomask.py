@@ -9,8 +9,8 @@ class Photomask():
 
     def __init__(self):
 
-        self.dmdPixelWidth = 684
-        self.dmdPixelHeight = 608
+        self.dmdPixelWidth = 608
+        self.dmdPixelHeight = 684
 
         # list in case the photomask has to be split into multiple files
         self.photomaskFiles = list()
