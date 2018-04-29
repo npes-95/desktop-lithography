@@ -43,9 +43,6 @@ class MainExposure(QThread):
 			self.stage.setY(y)
 			self.stage.moveToCoordinates()
 			
-			# sleep while camera moves to coordinates
-			sleep(2)
-			
 			# expose substrate
 			#self.LED.setUVLED(1)
 			self.LED.setRedLED(1)

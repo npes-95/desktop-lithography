@@ -6,6 +6,8 @@ from time import sleep
 
 stage = MotorDriver()
 
+print(stage.getMachineStatus())
+
 stage.setCoordinates((0,0,0))
 stage.moveToCoordinates()
 

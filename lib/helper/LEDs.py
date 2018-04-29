@@ -21,6 +21,10 @@ class LED():
         
         print("LEDs connected!")
         
+    def __del__(self):
+        self.setRedLED(0)
+        self.setUVLED(0)
+        
     def setRedLED(self, state):
         GPIO.output(self.redLEDPin, state)
         

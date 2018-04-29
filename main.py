@@ -43,9 +43,6 @@ class App(QMainWindow):
         # init tabs
         self.table_widget = TableWidget(self)
         self.setCentralWidget(self.table_widget)
-        
-        
-
 
         self.show()
         
@@ -94,6 +91,7 @@ class TableWidget(QWidget):
         # Add tabs to widget        
         self.layout.addWidget(self.tabs)
         self.setLayout(self.layout)
+        
         
         
     def initInterfaces(self):
@@ -387,6 +385,12 @@ class TableWidget(QWidget):
             QMessageBox.warning(self, "No Photomask Selected", "Please select a photomask before launching the operation!")
             
         else:
+            
+            if self.crosshairOn:
+                self.LED.setRedLED(0)
+                self.crosshairOn = False
+                
+            
             # disable launch and test buttons, enable cancel button
             self.launchButton.setEnabled(False)
             self.testButton.setEnabled(False)
@@ -403,11 +407,15 @@ class TableWidget(QWidget):
         
             # pass all the settings to the process thread
             self.mainEtchProcess = MainExposure(self.dmd, self.LED, self.stage, self.photomask, self.substrate, exposureTime, iterations)
+            
+            # stage move command needs to block, otherwise substrate could be exposed while the stage is moving
+            self.stage.block()
         
             # connect to progress bar
             self.mainEtchProcess.progress.connect(self.progressBar.setValue)
             self.mainEtchProcess.finished.connect(self.progressBar.reset)
             self.mainEtchProcess.finished.connect(self.resetButtons)
+            self.mainEtchProcess.finished.connect(self.stage.unblock)
             
             self.cancelButton.clicked.connect(self.mainEtchProcess.cancel)
         
@@ -416,6 +424,10 @@ class TableWidget(QWidget):
         
     @pyqtSlot()
     def testEtchLaunch(self):
+        
+        if self.crosshairOn:
+            self.LED.setRedLED(0)
+            self.crosshairOn = False
         
         # disable launch and test buttons, enable cancel button
         self.launchButton.setEnabled(False)
@@ -432,10 +444,14 @@ class TableWidget(QWidget):
         # pass all the settings to the process thread
         self.testEtchProcess = TestExposure(self.dmd, self.LED, self.stage, self.substrate, minExposureTime, maxExposureTime, step)
         
+        # stage move command needs to block, otherwise substrate could be exposed while the stage is moving
+        self.stage.block()
+        
         # connect to progress bar
         self.testEtchProcess.progress.connect(self.progressBar.setValue)
         self.testEtchProcess.finished.connect(self.progressBar.reset)
         self.testEtchProcess.finished.connect(self.resetButtons)
+        self.testEtchProcess.finished.connect(self.stage.unblock)
         
         self.cancelButton.clicked.connect(self.testEtchProcess.cancel)
         
