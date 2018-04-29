@@ -6,6 +6,8 @@ class LED():
     
     def __init__(self):
         
+        GPIO.setwarnings(False)
+        
         # set board mode to broadcom
         GPIO.setmode(GPIO.BCM)
         

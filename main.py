@@ -24,7 +24,8 @@ class App(QMainWindow):
  
     def __init__(self):
         super().__init__()
-        self.title = "Desktop Lithography Control Software - 1.0"
+        self.version = 1.0
+        self.title = "Desktop Lithography Control Software - " + str(self.version)
         self.left = 30
         self.top = 30
         self.width = 640
@@ -36,10 +37,14 @@ class App(QMainWindow):
         # basic window geometry
         self.setWindowTitle(self.title)
         self.setGeometry(self.left, self.top, self.width, self.height)
+        
+        print("\n\nDESKTOP LITHOGRAPHY CONTROL SOFTWARE - " + str(self.version) + "\n")
 
         # init tabs
         self.table_widget = TableWidget(self)
         self.setCentralWidget(self.table_widget)
+        
+        
 
 
         self.show()
@@ -51,7 +56,7 @@ class TableWidget(QWidget):
  
     def __init__(self, parent):   
         super(QWidget, self).__init__(parent)
-        self.layout = QVBoxLayout(self)
+        self.layout = QVBoxLayout()
         
         # init camera preview 
         self.cameraPreview = PiCameraPreview()

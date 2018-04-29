@@ -25,7 +25,7 @@ class MotorDriver(QObject):
                timeout=1
            )
        
-        print ("Serial configuration established: " + str(self.ser.isOpen()))
+        #print ("Serial configuration established: " + str(self.ser.isOpen()))
        
         self.textWrapper = io.TextIOWrapper(io.BufferedRWPair(self.ser, self.ser))
         
