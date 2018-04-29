@@ -46,9 +46,6 @@ class MotorDriver(QObject):
         self.moveToCoordinates()
         
         
-    def __del__(self):
-        self.ser.close()
-        
     def setX(self, x):
         self.x = x
         

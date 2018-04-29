@@ -365,7 +365,9 @@ class TableWidget(QWidget):
     # LOGIC
 
     @pyqtSlot()
-    def openFileDialog(self):    
+    def openFileDialog(self):  
+        if self.cameraPreview.isOpen:
+            self.cameraPreview.close()  
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
         file, _ = QFileDialog.getOpenFileName(self,"Please Select A Photmask", "","BMP Files (*.bmp)", options=options)
