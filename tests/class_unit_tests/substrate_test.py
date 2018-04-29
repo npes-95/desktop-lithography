@@ -12,6 +12,9 @@ circle = plt.Circle((10,5), 50, fill = False)
 
 substrate = Substrate()
 
+substrate.setDeviceWidth(3)
+substrate.setDeviceHeight(2)
+
 substrate.setBottomLeft(10,-45)
 substrate.setTopRight(10,55)
 
@@ -53,6 +56,8 @@ rectangle = plt.Rectangle((-10,0), 40, 20, fill = False)
 substrate.setShape("Rectangle")
 substrate.setBottomLeft(-10,0)
 substrate.setTopRight(30,20)
+
+substrate.setDeviceWidth(2)
 
 coordinates = substrate.getPackingCoordinates()
 

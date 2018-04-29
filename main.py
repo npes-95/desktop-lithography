@@ -368,7 +368,7 @@ class TableWidget(QWidget):
             self.cameraPreview.close()  
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        file, _ = QFileDialog.getOpenFileName(self,"Please Select A Photmask", "","BMP Files (*.bmp)", options=options)
+        file, _ = QFileDialog.getOpenFileName(self,"Please Select A Photmask", "","Photomask Files (*.bmp *.jpg *.svg *.pdf *.eps)", options=options)
         if file:
             self.photomaskTB.setText(file)
             # dos some other stuff here
@@ -396,11 +396,11 @@ class TableWidget(QWidget):
             self.testButton.setEnabled(False)
             self.cancelButton.setEnabled(True)
         
-            # pass settings to substrate and photomask
-            self.substrate.setShape(self.substrateShapeCB.currentText())
-        
+            # pass user settings to substrate and photomask   
             self.photomask.importFile(self.photomaskTB.text())
             self.photomask.split()
+            self.substrate.setShape(self.substrateShapeCB.currentText())
+
         
             exposureTime = float(self.exposureTimeTB.text())
             iterations = int(self.interationsTB.text())

@@ -14,8 +14,25 @@ class Photomask():
 
         # list in case the photomask has to be split into multiple files
         self.photomaskFiles = list()
+        self.photomaskFrameOffset = list()
+        
+        # physical dmd size to calculate offset
+        self.photomaskWidth = 6.5718
+        self.photomaskHeight = 3.699 
+        
+        self.photomaskWidth = 1
+        self.photomaskHeight = 1
         
         self.tempFilePath = "/home/pi/Documents/desktop-lithography/temp/"
+        
+    def getPhotomaskWidth(self):
+        return self.photomaskWidth
+        
+    def getPhotomaskHeight(self):
+        return self.photomaskHeight
+        
+    def getPhotomaskFrameOffset(self):
+        return self.photomaskFrameOffset
 
 
     def importFile(self, file):
@@ -37,8 +54,9 @@ class Photomask():
 
     def split(self):
 
-        # empty list
+        # empty lists
         self.photomaskFiles[:] = []
+        self.photomaskFrameOffset[:] = []
 
         # use new image for padding
         pad = Image.new('RGB',
@@ -55,6 +73,9 @@ class Photomask():
         # check how many times photomask fits into dmd area
         photomask_width_multiplier = math.ceil(rp_width/self.dmdPixelWidth)
         photomask_height_multiplier = math.ceil(rp_height/self.dmdPixelHeight)
+        
+        self.photomaskWidth = photomask_width_multiplier
+        self.photomaskHeight = photomask_height_multiplier
 
         # pad out with black so the final image will match the size of the DMD (or a multiple of)
         # copy photomask in (top left corner)
@@ -67,6 +88,7 @@ class Photomask():
         for w in range(photomask_width_multiplier):
             for h in range(photomask_height_multiplier):
                 split_photomask.append(pad.crop((w*self.dmdPixelWidth,h*self.dmdPixelHeight,(w+1)*self.dmdPixelWidth,(h+1)*self.dmdPixelHeight)))
+                self.photomaskFrameOffset.append((w*self.photomaskWidth, h*self.photomaskHeight))
 
         i = 0
 
