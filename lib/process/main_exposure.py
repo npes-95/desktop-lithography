@@ -38,8 +38,8 @@ class MainExposure(QThread):
         
         totalExposures = 0
         
-        if self.iterations > len(coordinates):
-            totalExposures = len(coordinates)
+        if self.iterations > len(coordinates) * len(frameOffset):
+            totalExposures = len(coordinates) * len(frameOffset)
         else:
             totalExposures = self.iterations
         
