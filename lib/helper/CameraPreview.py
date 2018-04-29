@@ -66,9 +66,6 @@ class videoThread(QThread):
             time.sleep(0.04)
             
         camera.close()
-
-            
-        print("Preview thread exiting.")
               
     def stop(self):
         self.running = False
@@ -107,7 +104,8 @@ class PiCameraPreview(QWidget):
         self.video.start()
         
         
-    def __del__(self):
+    def cleanup(self):
+        self.video.play()           
         self.video.stop()
         if self.video.isRunning():
             self.video.wait()

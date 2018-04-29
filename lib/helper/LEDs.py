@@ -21,7 +21,7 @@ class LED():
         
         print("LEDs connected!")
         
-    def __del__(self):
+    def cleanup(self):
         self.setRedLED(0)
         self.setUVLED(0)
         

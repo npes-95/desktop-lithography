@@ -87,6 +87,6 @@ class LightCrafter():
                 
 
         
-    def __del__(self):
+    def cleanup(self):
         
         self.dmdSocket.close()

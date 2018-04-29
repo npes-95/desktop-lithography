@@ -46,6 +46,16 @@ class App(QMainWindow):
 
         self.show()
         
+    def closeEvent(self,event):
+        print("\nExiting system.")
+        
+        self.table_widget.LED.cleanup()
+        self.table_widget.dmd.cleanup()
+        self.table_widget.stage.cleanup()
+        self.table_widget.cameraPreview.cleanup()
+        
+
+        
 
 
 
@@ -521,6 +531,8 @@ class TableWidget(QWidget):
             self.LED.setRedLED(1)
             self.crosshairOn = True
             
+
+     
         
 
 

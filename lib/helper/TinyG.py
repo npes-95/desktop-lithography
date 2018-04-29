@@ -49,7 +49,7 @@ class MotorDriver(QObject):
         self.moveToCoordinates()
         self.moveToCoordinates()
         
-    def __del__(self):
+    def cleanup(self):
         
         self.setCoordinates((0,0,0))
         self.moveToCoordinates()
