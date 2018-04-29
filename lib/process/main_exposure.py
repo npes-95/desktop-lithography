@@ -36,9 +36,16 @@ class MainExposure(QThread):
         
         frameOffset = self.photomask.getPhotomaskFrameOffset()
         
+        totalExposures = 0
+        
+        if self.iterations > len(coordinates):
+            totalExposures = len(coordinates)
+        else:
+            totalExposures = self.iterations
+        
         for x,y in coordinates:
             
-            if self.cancelled or patternsExposed > self.iterations:
+            if self.cancelled or patternsExposed => self.iterations:
                 break
             
             i = 0   
@@ -67,7 +74,7 @@ class MainExposure(QThread):
                 patternsExposed += 1
                 i += 1
                 
-                self.progress.emit(int(100*patternsExposed/self.iterations))
+                self.progress.emit(int(100*patternsExposed/totalExposures))
             
             
         # reset coordinates
